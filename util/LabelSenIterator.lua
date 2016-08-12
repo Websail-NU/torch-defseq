@@ -141,7 +141,7 @@ function LabelSenIterator:nextBatch(split)
   -- increment current batch
   batch_start = batch_start + self.seq_length
   self.split_batch_start[split] = batch_start
-  return {x=x, y=y, l=batch_labels, new=new_sentence, m=mask}
+  return {x=x, y=y, label=batch_labels, new=new_sentence, m=mask}
 end
 
 function LabelSenIterator:reset(split)

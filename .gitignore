@@ -1,1 +1,2 @@
-data/*/*.t7
+*.t7
+data/*/models
