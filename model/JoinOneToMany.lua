@@ -8,10 +8,19 @@ local JoinOneToMany, parent = torch.class('nn.JoinOneToMany', 'nn.Container')
 -- TODO: handle other dimension
 function JoinOneToMany:__init()
   parent.__init(self)
+  self:_initState()
+end
+
+function JoinOneToMany:_initState()
   self.output = torch.Tensor(1,1,1)
   self.gradInput = {}
   self.gradInputV = torch.Tensor(1,1)
   self.gradInputX = torch.Tensor(1,1,1)
+end
+
+function JoinOneToMany:clearState()
+  self:_initState()
+  parent.clearState(self)
 end
 
 function JoinOneToMany:updateOutput(input)

@@ -36,6 +36,7 @@ cmd:option('--batchSize', 64, 'number of examples per batch')
 cmd:option('--rho', 10, 'back-propagate through time (BPTT) for rho time-steps')
 cmd:option('--maxEpoch', 100, 'maximum number of epochs to run')
 cmd:option('--cuda', false, 'use CUDA')
+cmd:option('--cudnnCNN', false, 'use CUDNN CNN implementation')
 -- Embedding --
 cmd:option('--embeddingSize', 300, 'number of embedding units.')
 cmd:option('--embProjectSize', -1, 'non-linear projection for embedding (Sentence)')
@@ -48,7 +49,6 @@ cmd:option('--RIMode', 'rnn', 'rnn, concat, gated')
 cmd:option('--RIProjectSize', -1, 'linear projection for embedding (RI)')
 cmd:option('--RICharCNN', false, 'enable character CNN')
 cmd:option('--RIHypernym', false, 'enable hypernym embeddings')
-cmd:option('--cudnnCNN', false, 'use CUDNN CNN implementation')
 -- Regularization --
 cmd:option('--embDropoutProb', 0.25, 'embedding dropout probability')
 cmd:option('--dropoutProb', 0.5, 'dropout probability')
@@ -249,6 +249,7 @@ for epoch = state.start_epoch, opt.maxEpoch do
   log.info(string.format('- Train ppl = %f, val ppl = %f', train_ppl, val_ppl))
   -- save and update learning rate
   updateLR(epoch, val_ppl)
+  helper:clearModelState()
   if opt.saveAll then
     torch.save(opt.modelDir .. '/model_ep' .. epoch .. '.t7', lm)
   end

@@ -69,7 +69,8 @@ function LMHelper:__init(config)
       seq_length=self.rho,
       sos_id=self.sos_id,
       eos_id=self.eos_id,
-      padding_id=self.eos_id
+      padding_id=self.eos_id,
+      n_skip=self.n_skip
     }
   end
 end
@@ -151,6 +152,11 @@ function LMHelper:maskGradPred(grad_predictions)
       end
     end
   end
+end
+
+function LMHelper:clearModelState()
+  self.lm:forget()
+  self.lm:clearState()
 end
 
 function LMHelper.fileExists(name)
