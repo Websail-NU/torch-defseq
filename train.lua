@@ -6,7 +6,7 @@ require 'optim'
 require 'rnn'
 -- Utilities
 log = require 'log'
-require 'util.Perplexity'
+require 'eval.Perplexity'
 require 'util.LMHelper'
 require 'util.CharacterMap'
 eval_util = require 'eval.eval'
@@ -234,7 +234,6 @@ for epoch = state.start_epoch, opt.maxEpoch do
       log.info(string.format('-- Progress: %d@%d, cur_loss: %f, cur_ppl: %f, word rate: %f',
             state.steps, epoch, loss[1], ppl:perplexity(),
             epoch_steps * words_per_step / timer:time().real))
-      break
     end
   end
   -- end of epoch routine
