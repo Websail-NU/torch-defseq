@@ -36,6 +36,7 @@ function SenIterator:__init(config)
         {arg='sen_dep', type='boolean', default=false,
             help='Sentence dependent batch.'}
     )
+    if self.seq_length < 1 then error('seq_length needs to be more than 0') end
     if not self.padding_id then self.padding_id = self.eos_id end
     -- setting up batch size
     local b = self.batch_size

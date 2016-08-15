@@ -25,7 +25,7 @@ cmd:option('--sosId', 2, 'start of sentence id')
 cmd:option('--eosId', 1, 'end of sentence id')
 -- Training options --
 cmd:option('--optim', 'sgd', 'Optimization methods (i.e. sgd, adam, adagrad, rmsprop, ...)')
-cmd:option('--learningRate', 0.8, 'learning rate at t=0')
+cmd:option('--learningRate', 1.0, 'learning rate at t=0')
 cmd:option('--lrMomentum', 0, 'learning rate momentum')
 cmd:option('--lrDecayEvery', -1, 'number of epochs before learning rate is decayed')
 cmd:option('--lrDecayPPLImp', 0.96, 'improvement ratio between val ppl before decaying learning rate')
@@ -148,8 +148,9 @@ ppl = Perplexity()
 params, grad_params = lm:getParameters()
 batch = {}
 local timer = torch.Timer()
-local words_per_step = opt.batchSize * opt.rho
+-- local words_per_step = opt.batchSize * opt.rho
 local epoch_steps = 0
+local epoch_words = 0
 
 --[[Training: one batch]]--
 function f(w)
@@ -157,7 +158,10 @@ function f(w)
   grad_params:zero() -- reset gradients
   -- get data (batch is set in the main loop)
   local predictions = helper:predict(batch)
+  -- print(batch.y)
+  -- print(batch.m)
   local loss = crit:forward(predictions, helper.targets)
+  loss = loss / batch.x:size(2)
   -- backward
   local grad_predictions = crit:backward(predictions, helper.targets)
   helper:maskGradPred(grad_predictions)
@@ -166,11 +170,15 @@ function f(w)
   if opt.gradClip > 0 then
     grad_params:clamp(-opt.gradClip, opt.gradClip)
   end
+  local num_words = batch.m:sum()
   if opt.realTrainPPL then
     ppl:add(predictions, helper.targets, helper.m)
   else -- Approximate perplexity from loss (no mask)
-    ppl:addNLL(loss * opt.batchSize, opt.rho * opt.batchSize)
+    local all_tokens = batch.m:size(2) * batch.m:size(1)
+    ppl:addNLL(loss * all_tokens, all_tokens)
   end
+  epoch_words = epoch_words + num_words
+  grad_params:div(num_words/batch.m:size(1))
   return loss, grad_params
 end
 
@@ -178,6 +186,7 @@ end
 function reset()
   -- reset everything
   epoch_steps = 0
+  epoch_words = 0
   helper.loader:reset('train')
   helper.loader:reset('val')
   lm:forget()
@@ -233,7 +242,7 @@ for epoch = state.start_epoch, opt.maxEpoch do
     if state.steps % opt.printSteps == 0 then
       log.info(string.format('-- Progress: %d@%d, cur_loss: %f, cur_ppl: %f, word rate: %f',
             state.steps, epoch, loss[1], ppl:perplexity(),
-            epoch_steps * words_per_step / timer:time().real))
+            epoch_words / timer:time().real))
     end
   end
   -- end of epoch routine

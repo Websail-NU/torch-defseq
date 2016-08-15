@@ -19,8 +19,8 @@ function JoinOneToMany:_initState()
 end
 
 function JoinOneToMany:clearState()
-  self:_initState()
   parent.clearState(self)
+  self:_initState()
 end
 
 function JoinOneToMany:updateOutput(input)

@@ -95,7 +95,7 @@ function LabelSenIterator:initBatch(split)
     self.split_data[split], self.n_skip)
   local b = self.split_batch_size[split]
   local nb = math.ceil((max_len + 1) / self.seq_length)
-  local len = nb * self.seq_length
+  local len = self.seq_length > 0 and nb * self.seq_length or max_len
   local data = torch.IntTensor(b, len + 1) -- +1 for targets
   local mask = torch.ShortTensor(b, len+1):fill(0)
   data:fill(self.padding_id)
@@ -134,12 +134,15 @@ function LabelSenIterator:nextBatch(split)
     if not batch_data then return nil, nil, nil, nil end
   end
   -- return current batch portion of the batch data
-  local batch_end = batch_start + self.seq_length - 1
+  local batch_end = self.seq_length > 0 and
+    batch_start + self.seq_length - 1 or
+    batch_data:size(2) - 1
   local x = batch_data[{{}, {batch_start, batch_end}}]
   local y = batch_data[{{}, {batch_start + 1, batch_end + 1}}]
   local mask = batch_mask[{{}, {batch_start + 1, batch_end + 1}}]
   -- increment current batch
-  batch_start = batch_start + self.seq_length
+  batch_start = self.seq_length > 0 and batch_start + self.seq_length
+                                    or batch_end + 1
   self.split_batch_start[split] = batch_start
   return {x=x, y=y, label=batch_labels, new=new_sentence, m=mask}
 end

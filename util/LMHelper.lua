@@ -32,9 +32,10 @@ function LMHelper:__init(config)
       {arg='eosId', type='number', default=1},
       {arg='nSkips', type='number', default=0}
   )
-  self.inputs = torch.Tensor(self.rho, self.batch_size)
-  self.targets = torch.Tensor(self.rho, self.batch_size)
-  self.m  = torch.Tensor(self.batch_size, self.rho)
+  self._rho = self.rho < 1 and 1 or self.rho
+  self.inputs = torch.Tensor(self._rho, self.batch_size)
+  self.targets = torch.Tensor(self._rho, self.batch_size)
+  self.m  = torch.Tensor(self.batch_size, self._rho)
   self.labels = torch.Tensor(self.batch_size)
   if self.cuda then
     self.inputs, self.labels = self.inputs:cuda(), self.labels:cuda()
@@ -78,6 +79,7 @@ end
 function LMHelper:_check_size(batch)
   local b = batch.x:size(1)
   local rho = batch.x:size(2)
+  self._rho = rho
   if b ~= self.inputs:size(2) or rho ~= self.inputs:size(1) then
     self.inputs = torch.Tensor(rho, b)
     self.targets = torch.Tensor(rho, b)
@@ -138,18 +140,11 @@ function LMHelper:dlm(grad_predictions)
 end
 
 function LMHelper:maskGradPred(grad_predictions)
-  for i = 1, self.rho do
+  for i = 1, self._rho do
     local mask = self.m[{{}, {i}}]
     if mask:sum() ~= self.batch_size then
-      if self.hsm_map then
-        for j = 1,2 do
-          local cmask = mask:expandAs(grad_predictions[i][j])
-          grad_predictions[i][j]:cmul(cmask)
-        end
-      else
-        mask = mask:expandAs(grad_predictions[i])
-        grad_predictions[i]:cmul(mask)
-      end
+      mask = mask:expandAs(grad_predictions[i])
+      grad_predictions[i]:cmul(mask)
     end
   end
 end
