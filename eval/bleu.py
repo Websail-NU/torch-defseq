@@ -1,10 +1,11 @@
 from subprocess import Popen, PIPE
 import os
 import sys
-
+import random
 
 tmp_dir = "/tmp"
 bleu_path = "./sentence-bleu"
+mode = 'average'
 ref_file = sys.argv[1]
 hyp_file = sys.argv[2]
 
@@ -18,6 +19,19 @@ def read_definition_file(ifp):
             defs[word] = []
         defs[word].append(definition)
     return defs
+
+def get_bleu_score(bleu_path, all_ref_paths, d, hyp_path):
+    with open(hyp_path, 'w') as ofp:
+        ofp.write(d)
+    read_cmd = ['cat', hyp_path]
+    bleu_cmd = [bleu_path] + all_ref_paths
+    rp = Popen(read_cmd, stdout=PIPE)
+    bp = Popen(bleu_cmd, stdin=rp.stdout, stdout=PIPE, stderr=devnull)
+    out, err = bp.communicate()
+    if err is None:
+        return float(out.strip())
+    else:
+        return None
 
 # Read data
 refs, hyps = None, None
@@ -58,16 +72,17 @@ for word in words:
     # score for each output
     micro_score = 0
     micro_count = 0
-    for d in whyps:
-        with open(hyp_path, 'w') as ofp:
-            ofp.write(d)
-        read_cmd = ['cat', hyp_path]
-        bleu_cmd = [bleu_path] + all_ref_paths
-        rp = Popen(read_cmd, stdout=PIPE)
-        bp = Popen(bleu_cmd, stdin=rp.stdout, stdout=PIPE, stderr=devnull)
-        out, err = bp.communicate()
-        if err is None:
-            micro_score += float(out.strip())
+    if mode == "average":
+        for d in whyps:
+            rhscore = get_bleu_score(bleu_path, all_ref_paths, d, hyp_path)
+            if rhscore is not None:
+                micro_score += rhscore
+                micro_count += 1
+    elif mode == "random":
+        d = random.choice(whyps)
+        rhscore = get_bleu_score(bleu_path, all_ref_paths, d, hyp_path)
+        if rhscore is not None:
+            micro_score += rhscore
             micro_count += 1
     total_hyps += micro_count
     score += micro_score / micro_count
@@ -78,5 +93,5 @@ devnull.close()
 for f in to_be_deleted:
     os.remove(f)
 print(score/count)
-# print(total_hyps)
-# print(total_refs)
+print(total_hyps)
+print(total_refs)
