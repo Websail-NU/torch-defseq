@@ -157,9 +157,10 @@ function f(w)
   assert(w == params)
   grad_params:zero() -- reset gradients
   -- get data (batch is set in the main loop)
+  local num_words = batch.m:sum()
+  local batch_scaling = batch.m:size(1) / num_words
+  --forward
   local predictions = helper:predict(batch)
-  -- print(batch.y)
-  -- print(batch.m)
   local loss = crit:forward(predictions, helper.targets)
   loss = loss / batch.x:size(2)
   -- backward
@@ -170,7 +171,7 @@ function f(w)
   if opt.gradClip > 0 then
     grad_params:clamp(-opt.gradClip, opt.gradClip)
   end
-  local num_words = batch.m:sum()
+  -- reporting performance
   if opt.realTrainPPL then
     ppl:add(predictions, helper.targets, helper.m)
   else -- Approximate perplexity from loss (no mask)
@@ -178,7 +179,7 @@ function f(w)
     ppl:addNLL(loss * all_tokens, all_tokens)
   end
   epoch_words = epoch_words + num_words
-  grad_params:div(num_words/batch.m:size(1))
+  grad_params:mul(batch_scaling)
   return loss, grad_params
 end
 
