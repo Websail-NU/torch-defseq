@@ -5,6 +5,7 @@ require 'dpnn'
 include('JoinOneToMany.lua')
 
 local lm_factory = {}
+lm_factory.marker_name = '_marker_name_'
 
 local function getLSTMConfig(config)
   config = config or {}
@@ -152,6 +153,7 @@ local function getRIGRUGate(opt)
   local gates = nn.Sequential()
     :add(nn.Linear(opt.RIOutSize + opt.LSTMOutSize, opt.RIOutSize + opt.LSTMOutSize))
     :add(nn.Sigmoid()):add(split_gates)
+  gates[lm_factory.marker_name] = 'gate'
   local output = nn.Sequential()
     :add(nn.ConcatTable():add(gates):add(nn.Identity()))
     :add(nn.FlattenTable()) -- {z, r, [ri;lstm]}
@@ -345,26 +347,34 @@ lm_factory.addTemperature = function(lm, T, cuda, use_softmax, output_both)
   return lm
 end
 
-local function rfind_modules(model, module_name, modules)
+local function match_module(module, module_name, marker_name)
+  if marker_name then
+    return module[lm_factory.marker_name] == marker_name
+  else
+    return torch.isTypeOf(module, module_name)
+  end
+end
+
+local function rfind_modules(model, module_name, modules, marker_name)
   modules = modules and modules or {}
   if torch.isTypeOf(model, 'nn.Container') then
     for i = 1, #model.modules do
       if torch.isTypeOf(model.modules[i], 'nn.Container') then
-        rfind_modules(model.modules[i], module_name, modules)
+        rfind_modules(model.modules[i], module_name, modules, marker_name)
       end
-      if torch.isTypeOf(model.modules[i], module_name) then
+      if match_module(model.modules[i], module_name, marker_name) then
         table.insert(modules, model.modules[i])
       end
     end
   end
-  if torch.isTypeOf(model.modules[i], module_name) then
-    table.insert(modules, model.modules[i])
+  if match_module(model, module_name, marker_name) then
+    table.insert(modules, model)
   end
 end
 
-lm_factory.find_modules = function(model, module_name)
+lm_factory.find_modules = function(model, module_name, marker_name)
   local modules = {}
-  rfind_modules(model, module_name, modules)
+  rfind_modules(model, module_name, modules, marker_name)
   return modules
 end
 
