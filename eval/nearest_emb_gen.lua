@@ -12,7 +12,7 @@ cmd:option('--embFilepath', 'data/commondefs/auxiliary/emb.t7',
            'path to word embedding torch binary file. See preprocess/prep_w2v.lua')
 cmd:option('--outputFile', 'models/nearest/test_nearest.txt', 'file to save output')
 cmd:option('--exampleFile', 'train.txt', 'data to copy definitions from')
-cmd:option('--wordListFile', 'shortlist_test.txt', 'words to generate definitions')
+cmd:option('--wordListFile', 'shortlist/shortlist_test.txt', 'words to generate definitions')
 -- Reporting --
 cmd:option('--logFilepath', '', 'Log file path (std by default)')
 
@@ -28,15 +28,22 @@ if opt.cuda then
 end
 examples = {}
 definitions = {}
-
+dictionaries = {}
 for line in io.lines(path.join(opt.dataDir, opt.exampleFile)) do
   local parts = stringx.split(line, '\t')
   local word = parts[1]
+  local dict = parts[3]
   local definition = parts[4]
+  dictionaries[dict] = true
   if not definitions[word] then definitions[word] = {} end
-  table.insert(definitions[word], definition)
+  table.insert(definitions[word], {dict, definition})
   examples[w2i[word]] = true
 end
+dict_ofp = {}
+for k, v in pairs(dictionaries) do
+  dict_ofp[k] = io.open(path.join(opt.dataDir, opt.outputFile..'.'..k), 'w')
+end
+
 ofp = io.open(path.join(opt.dataDir, opt.outputFile), 'w')
 for word in io.lines(path.join(opt.dataDir, opt.wordListFile)) do
   local widx = w2i[word]
@@ -54,8 +61,12 @@ for word in io.lines(path.join(opt.dataDir, opt.wordListFile)) do
   for i = 1, #nearest_defs do
     ofp:write(word)
     ofp:write('\t')
-    ofp:write(nearest_defs[i])
+    ofp:write(nearest_defs[i][2])
     ofp:write('\n')
+    dict_ofp[nearest_defs[i][1]]:write(word)
+    dict_ofp[nearest_defs[i][1]]:write('\t')
+    dict_ofp[nearest_defs[i][1]]:write(nearest_defs[i][2])
+    dict_ofp[nearest_defs[i][1]]:write('\n')
   end
 end
 ofp:close()
