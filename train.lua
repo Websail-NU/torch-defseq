@@ -241,7 +241,7 @@ for epoch = state.start_epoch, opt.maxEpoch do
     state.steps = state.steps + 1
     epoch_steps = epoch_steps + 1
     if state.steps % opt.printSteps == 0 then
-      log.info(string.format('-- Progress: %d@%d, cur_loss: %f, cur_ppl: %f, word rate: %f',
+      log.info(string.format('-- Progress: %d@%d, loss: %f, ppl: %f, rate: %f wps',
             state.steps, epoch, loss[1], ppl:perplexity(),
             epoch_words / timer:time().real))
     end
