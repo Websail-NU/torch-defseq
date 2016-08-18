@@ -101,15 +101,13 @@ if LMHelper.fileExists(opt.modelDir .. '/latest.t7')
    and LMHelper.fileExists(opt.modelDir .. '/training_state.t7') then
   log.info('Resume training...')
   lm = torch.load(opt.modelDir .. '/latest.t7')
-  log.info('- model loaded')
   lookup = lm_factory.get_lookup(opt)
-  log.info('- embedding loaded')
   if opt.mode ~= 'sen' then
     lookup_ri = lm_factory.get_lookup(opt)
     lm_factory.share_parameters(lookup, lookup_ri)
   end
   state = torch.load(opt.modelDir .. '/training_state.t7')
-  log.info('- training state loaded')
+  log.info(table.tostring(state, '\n'))
 else
   log.info('No previous model, creating new model...')
   lm, lookup, lookup_ri = lm_factory.create_model(opt)
@@ -140,7 +138,7 @@ end
 log.info('Model:\n' .. lm:__tostring__())
 
 --[[Loss]]--
-crit = LMHelper.SeqClassNNLCriterion()
+crit = LMHelper.SeqClassNNLCriterion(opt.HSM)
 if opt.cuda then
   crit:cuda()
 end
@@ -220,7 +218,10 @@ function updateLR(epoch, val_ppl)
     end
     if state.imp_wait >= opt.lrDecayPPLWait then
       log.info('- No improvement, learning rate decay')
-      state.optim_config.learningRate = old_lr * opt.lrDecayFactor
+      state.optim_config = {
+        learningRate = old_lr * opt.lrDecayFactor,
+        momentum=opt.lrMomentum
+      }
       state.imp_wait = 0
      end
   end
