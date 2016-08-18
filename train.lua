@@ -30,7 +30,7 @@ cmd:option('--lrMomentum', 0, 'learning rate momentum')
 cmd:option('--lrDecayEvery', -1, 'number of epochs before learning rate is decayed')
 cmd:option('--lrDecayPPLImp', 0.96, 'improvement ratio between val ppl before decaying learning rate')
 cmd:option('--lrDecayPPLWait', 2, 'number of non-improving epochs to wait before decaying learning rate')
-cmd:option('--lrDecayFactor', 0.65, 'factor by which learning rate is decayed (lr = lr * factor)')
+cmd:option('--lrDecayFactor', 0.8, 'factor by which learning rate is decayed (lr = lr * factor)')
 cmd:option('--gradClip', 5, 'clamp gradients of each batch (-gradClip >=b grad >= gradClip)')
 cmd:option('--batchSize', 64, 'number of examples per batch')
 cmd:option('--rho', 10, 'back-propagate through time (BPTT) for rho time-steps')
@@ -218,10 +218,7 @@ function updateLR(epoch, val_ppl)
     end
     if state.imp_wait >= opt.lrDecayPPLWait then
       log.info('- No improvement, learning rate decay')
-      state.optim_config = {
-        learningRate = old_lr * opt.lrDecayFactor,
-        momentum=opt.lrMomentum
-      }
+      state.optim_config.learningRate = old_lr * opt.lrDecayFactor
       state.imp_wait = 0
      end
   end

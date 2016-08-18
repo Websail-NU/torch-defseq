@@ -45,6 +45,7 @@ for k, v in pairs(dictionaries) do
 end
 
 ofp = io.open(path.join(opt.dataDir, opt.outputFile), 'w')
+ofp2 = io.open(path.join(opt.dataDir, opt.outputFile..'.all'), 'w')
 for word in io.lines(path.join(opt.dataDir, opt.wordListFile)) do
   local widx = w2i[word]
   local wemb = emb[widx]
@@ -63,6 +64,14 @@ for word in io.lines(path.join(opt.dataDir, opt.wordListFile)) do
     ofp:write('\t')
     ofp:write(nearest_defs[i][2])
     ofp:write('\n')
+    ofp2:write(word)
+    ofp2:write('\t')
+    ofp2:write(' ')
+    ofp2:write('\t')
+    ofp2:write(nearest_defs[i][1])
+    ofp2:write('\t')
+    ofp2:write(nearest_defs[i][2])
+    ofp2:write('\n')
     dict_ofp[nearest_defs[i][1]]:write(word)
     dict_ofp[nearest_defs[i][1]]:write('\t')
     dict_ofp[nearest_defs[i][1]]:write(nearest_defs[i][2])
@@ -70,3 +79,7 @@ for word in io.lines(path.join(opt.dataDir, opt.wordListFile)) do
   end
 end
 ofp:close()
+ofp2:close()
+for k, v in pairs(dictionaries) do
+  dict_ofp[k]:close()
+end
