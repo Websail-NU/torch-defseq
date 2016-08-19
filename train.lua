@@ -120,6 +120,7 @@ else
   }
   if LMHelper.fileExists(opt.logFilepath) then
     os.remove(opt.logFilepath)
+    log.info('Configurations: \n' .. table.tostring(opt, '\n'))
   end
 end
 
