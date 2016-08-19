@@ -221,8 +221,10 @@ function updateLR(epoch, val_ppl)
       log.info('- No improvement, learning rate decay')
       state.optim_config.learningRate = old_lr * opt.lrDecayFactor
       state.imp_wait = 0
-     end
+      if opt.lrDecayFactor == 1.0 then return true end
+    end
   end
+  return false
 end
 
 --[[Training: Main Loop]]--
@@ -259,10 +261,11 @@ for epoch = state.start_epoch, opt.maxEpoch do
   local val_ppl = ppl:perplexity()
   log.info(string.format('- Train ppl = %f, val ppl = %f', train_ppl, val_ppl))
   -- save and update learning rate
-  updateLR(epoch, val_ppl)
+  local done_training = updateLR(epoch, val_ppl)
   helper:clearModelState()
   if opt.saveAll then
     torch.save(opt.modelDir .. '/model_ep' .. epoch .. '.t7', lm)
+    torch.save(opt.modelDir .. '/state_ep' .. epoch .. '.t7', state)
   end
   if val_ppl < state.best_val_ppl then
     log.info(string.format('- Best model updated'))
@@ -278,4 +281,5 @@ for epoch = state.start_epoch, opt.maxEpoch do
   log.info(string.format('- Epoch time: %ds', timer:time().real))
   log.info(string.format('- Best model ppl = %f @ ep = %d',
                           state.best_val_ppl, state.best_epoch))
+  if done_training then break end
 end
