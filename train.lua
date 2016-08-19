@@ -40,6 +40,7 @@ cmd:option('--cudnnCNN', false, 'use CUDNN CNN implementation')
 -- Embedding --
 cmd:option('--embeddingSize', 300, 'number of embedding units.')
 cmd:option('--embProjectSize', -1, 'non-linear projection for embedding (Sentence)')
+cmd:option('--initLogitWithEmb', false, 'initialize logit with the embedding.')
 cmd:option('--embFilepath', 'data/commondefs/auxiliary/emb.t7', 'path to word embedding torch binary file. See preprocess/prep_w2v.lua')
 cmd:option('--hyperEmbFilepath', 'data/commondefs/auxiliary/hypernym_embs.t7', 'path to hypernym embeddings, a torch binary file. See preprocess/prep_hypernyms.lua')
 -- Model --
