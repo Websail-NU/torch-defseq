@@ -48,9 +48,9 @@ cmd:option('--temperature', 1, 'temperature')
 cmd:option('--genWords', 'shortlist/shortlist_test.txt', 'file containing list of words.')
 cmd:option('--genMethod', 'greedy', 'greedy, sampling, beam')
 cmd:option('--genOutFile', 'gen.txt', 'output generanted definition file')
-cmd:option('--genMaxLen', 20, 'number of tokens to generate')
+cmd:option('--genMaxLen', 30, 'number of tokens to generate')
+cmd:option('--genSamples', 1, 'number of samples for sampling methods')
 cmd:option('--beamWidth', 10, 'number top-k to sequences in beam search')
-
 cmd:option('--rvd', false, 'compute reversed dictionary output')
 cmd:option('--rvdWords', 'shortlist/shortlist_test.txt',
            'filename to a list of words in test set.')
@@ -94,7 +94,7 @@ helper = LMHelper(opt)
 
 --[[Model]]--
 log.info('Loading model...')
-lm = torch.load(opt.modelDir .. '/latest.t7')
+lm = torch.load(opt.modelDir .. '/best_model.t7')
 lookup = lm_factory.get_lookup(opt)
 if opt.mode ~= 'sen' then
   lookup_ri = lm_factory.get_lookup(opt)
@@ -150,23 +150,30 @@ if opt.gen then
   for line in io.lines(path.join(opt.dataDir, opt.genWords)) do
     local seed_ids, label_ids = gen_util.seed2tensor({line}, opt.w2i)
     if opt.mode == sen then label_ids = nil end
-    local def_ids
+    local candidates
     if opt.genMethod == 'sampling' then
-      def_ids = gen_util.sample(seed_ids, helper, opt.genMaxLen, label_ids)
+      candidates = {}
+      for i = 1, opt.genSamples do
+        local sample = gen_util.sample(seed_ids, helper, opt.genMaxLen, label_ids)
+        table.insert(candidates, sample)
+      end
     elseif opt.genMethod == 'greedy' then
-      def_ids = gen_util.greedy(seed_ids, helper, opt.genMaxLen, label_ids)
+      candidates = {gen_util.greedy(seed_ids, helper, opt.genMaxLen, label_ids)}
     elseif opt.genMethod == 'beam' then
       local lstms = lm_factory.find_modules(helper.lm, 'nn.SeqLSTM')
       local beams = gen_util.beam(seed_ids, helper,
                                   lstms, opt.eosId, opt.beamWidth,
                                   opt.genMaxLen, label_ids)
-      def_ids = {beams[1].seq}
+      candidates = {}
+      for i = 1, #beams do table.insert(candidates, beams[i].seq) end
     end
-    local sentences = gen_util.ids2words(opt.i2w, def_ids, opt.eosId)
-    ofp:write(line)
-    ofp:write('\t')
-    ofp:write(sentences[1])
-    ofp:write('\n')
+    for i = 1, #candidates do
+      local sentences = gen_util.ids2words(opt.i2w, candidates[i], opt.eosId)
+      ofp:write(line)
+      ofp:write('\t')
+      ofp:write(sentences[1])
+      ofp:write('\n')
+    end
   end
   ofp:close()
   log.info(string.format('- Elapsed time = %ds', timer:time().real))

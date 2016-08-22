@@ -169,10 +169,6 @@ function f(w)
   local grad_predictions = crit:backward(predictions, helper.targets)
   helper:maskGradPred(grad_predictions)
   helper:dlm(grad_predictions)
-  -- gradient clip
-  if opt.gradClip > 0 then
-    grad_params:clamp(-opt.gradClip, opt.gradClip)
-  end
   -- reporting performance
   if opt.realTrainPPL then
     ppl:add(predictions, helper.targets, helper.m)
@@ -182,6 +178,10 @@ function f(w)
   end
   epoch_words = epoch_words + num_words
   grad_params:mul(batch_scaling)
+  -- gradient clip
+  if opt.gradClip > 0 then
+    grad_params:clamp(-opt.gradClip, opt.gradClip)
+  end
   return loss, grad_params
 end
 
