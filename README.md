@@ -5,7 +5,7 @@ A recurrent neural network that learns to define words from dictionaries.
 - [Torch](https://github.com/torch/torch7)
 - [Python 2.7](https://www.python.org/) (for basic scripts)
 - [Moses](http://www.statmt.org/moses/) (specifically we just use [sentence-bleu.cpp](https://github.com/moses-smt/mosesdecoder/blob/master/mert/sentence-bleu.cpp) for evaluation)
-- [KenLM](https://github.com/kpu/kenlm) or [SRILM](http://www.speech.sri.com/projects/srilm/)
+- [KenLM](https://github.com/kpu/kenlm) or [SRILM](http://www.speech.sri.com/projects/srilm/) (for ranking definition candidates, any [ARPA](http://www.speech.sri.com/projects/srilm/manpages/ngram-format.5.html) file will do)
 
 ### CUDA Libraries
 Skip this if you do not have a GPU.
