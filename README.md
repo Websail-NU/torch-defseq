@@ -22,13 +22,35 @@ If you are planing to use GPU (CUDA), you will need the following packages:
 - [cunn](https://github.com/torch/cunn)
 - [cudnn](https://github.com/soumith/cudnn.torch) (make sure that you get the right branch for your cuDNN version)
 
+To install from source, go to the source code directory and run ```luarocks install```.
+
 ### Word Embedding
 You will also need a set of word embeddings in torch binary format of an object:
 ``` lua
 {
-  M, % 2D tensor where each row is an embedding
-  v2wvocab, % index-to-word map
-  w2vvocab % word-to-index map
+  M, -- 2D tensor where each row is an embedding
+  v2wvocab, -- index-to-word map
+  w2vvocab -- word-to-index map
 }
 ```
-You can download from [Word2Vec](https://code.google.com/archive/p/word2vec/) and use [word2vec.torch](https://github.com/rotmanmi/word2vec.torch) to convert them into torch binary file.
+You can download embeddings from [Word2Vec](https://code.google.com/archive/p/word2vec/) and use [word2vec.torch](https://github.com/rotmanmi/word2vec.torch) to convert them into torch binary file.
+
+## Usage
+
+In most of the scripts, there will be a help message which can be accessed by
+
+``` shell
+th script.lua --help
+```
+
+### Preparing data
+- First you need to convert text data into torch binary files by using ```preprocess/prep_definition.lua```. This will create multiple torch binary files in the data directory
+- Then sub-select word embeddings using ```preprocess/prep_w2v.lua```. This will align vocab and only save a set of embeddings we need)
+
+We include our dataset (```data/commondefs```). If you want to use other dataset, please check the file format. For dictionary parsing scripts, check out [dict-definition](https://github.com/NorThanapon/dict-definition) (only support [WordNet](https://wordnet.princeton.edu/) and [GCIDE](http://gcide.gnu.org.ua/) for now).
+
+### Main scripts
+- ```train.lua``` is a script for training a model
+- ```test.lua``` is a script that uses a model to compute perplexity, generate definitions, and rank words (reverse dictionary).
+
+Please see the option within the help message of the scripts.
