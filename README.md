@@ -5,6 +5,7 @@ A recurrent neural network that learns to define words from dictionaries.
 - [Torch](https://github.com/torch/torch7)
 - [Python 2.7](https://www.python.org/) (for basic scripts)
 - [Moses](http://www.statmt.org/moses/) (specifically we just use [sentence-bleu.cpp](https://github.com/moses-smt/mosesdecoder/blob/master/mert/sentence-bleu.cpp) for evaluation)
+- [KenLM](https://github.com/kpu/kenlm) or [SRILM](http://www.speech.sri.com/projects/srilm/)
 
 ### CUDA Libraries
 Skip this if you do not have a GPU.
@@ -21,6 +22,10 @@ If you are planing to use GPU (CUDA), you will need the following packages:
 - [cutorch](https://github.com/torch/cutorch)
 - [cunn](https://github.com/torch/cunn)
 - [cudnn](https://github.com/soumith/cudnn.torch) (make sure that you get the right branch for your cuDNN version)
+
+### Python Libraries
+- [numpy](http://www.numpy.org/)
+- [KenLM](https://github.com/kpu/kenlm) (installation: ```pip install https://github.com/kpu/kenlm/archive/master.zip```)
 
 To install from source, go to the source code directory and run ```luarocks install```.
 
