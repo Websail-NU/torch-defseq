@@ -94,7 +94,7 @@ if LMHelper.fileExists(opt.modelDir .. '/latest.t7')
     lm_factory.share_parameters(lookup, lookup_ri)
   end
   state = torch.load(opt.modelDir .. '/training_state.t7')
-  log.info(table.tostring(state, '\n'))
+  --log.info(table.tostring(state, '\n'))
 else
   log.info('No previous model, creating new model...')
   lm, lookup, lookup_ri = lm_factory.create_model(opt)
@@ -137,6 +137,7 @@ if opt.cuda then
   if lookup_ri then lookup_ri:cuda() end
   if hlookup then hlookup:cuda() end
 end
+print('model loaded')
 log.info('Model:\n' .. lm:__tostring__())
 
 --[[Loss]]--
