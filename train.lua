@@ -83,6 +83,18 @@ log.outfile = opt.logFilepath
 log.info('Configurations: \n' .. table.tostring(opt, '\n'))
 lm_factory = require 'model.lm'
 
+--[[Additional data]]
+if opt.RICharCNN then
+  i2w = torch.load(path.join(opt.dataDir, 'index2word.t7'))
+  opt.charMap = CharacterMap(i2w)
+end
+if opt.RIHypernym then
+  hlookup = nn.LookupTable(opt.numVocab, opt.embeddingSize)
+  hlookup.maxOutNorm = -1
+  local hemb = torch.load(opt.hyperEmbFilepath)
+  hlookup.weight:copy(hemb)
+end
+
 --[[Model: load existing if exists]]--
 if LMHelper.fileExists(opt.modelDir .. '/latest.t7')
    and LMHelper.fileExists(opt.modelDir .. '/training_state.t7') then
@@ -106,20 +118,9 @@ else
   }
   if LMHelper.fileExists(opt.logFilepath) then
     os.remove(opt.logFilepath)
+    opt.charMap = nil
     log.info('Configurations: \n' .. table.tostring(opt, '\n'))
   end
-end
-
---[[Additional data]]
-if opt.RICharCNN then
-  i2w = torch.load(path.join(opt.dataDir, 'index2word.t7'))
-  opt.charMap = CharacterMap(i2w)
-end
-if opt.RIHypernym then
-  hlookup = nn.LookupTable(opt.numVocab, opt.embeddingSize)
-  hlookup.maxOutNorm = -1
-  local hemb = torch.load(opt.hyperEmbFilepath)
-  hlookup.weight:copy(hemb)
 end
 
 helper = LMHelper(opt)
