@@ -118,8 +118,10 @@ else
   }
   if LMHelper.fileExists(opt.logFilepath) then
     os.remove(opt.logFilepath)
+    local charMap = opt.charMap
     opt.charMap = nil
     log.info('Configurations: \n' .. table.tostring(opt, '\n'))
+    opt.charMap = charMap
   end
 end
 
