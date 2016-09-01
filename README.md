@@ -6,6 +6,7 @@ A recurrent neural network that learns to define words from dictionaries.
 - [Python 2.7](https://www.python.org/) (for basic scripts)
 - [Moses](http://www.statmt.org/moses/) (specifically we just use [sentence-bleu.cpp](https://github.com/moses-smt/mosesdecoder/blob/master/mert/sentence-bleu.cpp) for evaluation)
 - [KenLM](https://github.com/kpu/kenlm) or [SRILM](http://www.speech.sri.com/projects/srilm/) (for ranking definition candidates, any [ARPA](http://www.speech.sri.com/projects/srilm/manpages/ngram-format.5.html) file will do)
+- [Fish shell](https://fishshell.com/) and [Virtualenv](https://virtualenv.pypa.io/en/stable/) (If you don't know them, you can skip. We have fish scripts help running python or torch batch commands)
 
 ### CUDA Libraries
 Skip this if you do not have a GPU.
@@ -23,11 +24,11 @@ If you are planing to use GPU (CUDA), you will need the following packages:
 - [cunn](https://github.com/torch/cunn)
 - [cudnn](https://github.com/soumith/cudnn.torch) (make sure that you get the right branch for your cuDNN version)
 
+To install from source, go to the source code directory and run ```luarocks install```.
+
 ### Python Libraries
 - [numpy](http://www.numpy.org/)
 - [KenLM](https://github.com/kpu/kenlm) (installation: ```pip install https://github.com/kpu/kenlm/archive/master.zip```)
-
-To install from source, go to the source code directory and run ```luarocks install```.
 
 ### Word Embedding
 You will also need a set of word embeddings in torch binary format of an object:
