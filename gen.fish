@@ -1,11 +1,11 @@
 #!/usr/bin/fish
 
 set temperatures ".05" ".1" ".25" ".5"
-set models "m2" "m3" "m4"
+set models "m6"
 set model_dir "data/commondefs/models/"
 set vshortlist "shortlist/shortlist_valid.txt"
 set tshortlist "shortlist/shortlist_test.txt"
-set args "--dataType" "labeled" "--mode" "ri" "--batchSize" "50" "--gen" "--genMaxLen" "30" "--genMethod" "sampling" "--genSamples" "40" "--cuda"
+set args "--dataType" "labeled" "--mode" "ri" "--batchSize" "50" "--gen" "--genMaxLen" "30" "--genMethod" "sampling" "--genSamples" "40" "--cuda" "--cudnnCNN" "--RICharCNN" "--RIHypernym"
 for m in $models
 	for t in $temperatures
 		echo $m" "$t

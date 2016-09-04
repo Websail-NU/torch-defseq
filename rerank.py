@@ -57,7 +57,11 @@ def read_definition_file(ifp):
         definition = parts[-1]
         if word not in defs:
             defs[word] = []
-        defs[word].append(clean_repeated(definition))
+        prev_def = None
+        while prev_def != definition:
+            prev_def = definition
+            definition = clean_repeated(definition)
+        defs[word].append(definition)
         ndefs += 1
     return defs, ndefs
 
