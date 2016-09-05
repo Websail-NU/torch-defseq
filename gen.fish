@@ -1,6 +1,6 @@
 #!/usr/bin/fish
 
-set temperatures ".05" ".1" ".25" ".5"
+set temperatures ".05" ".1" ".25" ".5" "1"
 set models "m6"
 set model_dir "data/commondefs/models/"
 set vshortlist "shortlist/shortlist_valid.txt"
