@@ -153,9 +153,10 @@ if opt.gen then
     local candidates
     if opt.genMethod == 'sampling' then
       candidates = {}
+      local samples = gen_util.sample(
+        seed_ids, helper, opt.genMaxLen, label_ids, opt.genSamples)
       for i = 1, opt.genSamples do
-        local sample = gen_util.sample(seed_ids, helper, opt.genMaxLen, label_ids)
-        table.insert(candidates, sample)
+        table.insert(candidates, samples[{{i}, {}}])
       end
     elseif opt.genMethod == 'greedy' then
       candidates = {gen_util.greedy(seed_ids, helper, opt.genMaxLen, label_ids)}

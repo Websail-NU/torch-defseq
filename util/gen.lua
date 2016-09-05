@@ -62,8 +62,13 @@ local function select_word(pred, sampling)
   return words
 end
 
-local function basic_gen(seed_ids, helper, max_len, label_ids, sampling)
+local function basic_gen(seed_ids, helper, max_len, label_ids, sampling, n_sampling)
   max_len = max_len and max_len or 20
+  n_sampling = n_sampling and n_sampling or 1
+  if n_sampling > 1 then
+    seed_ids = seed_ids:expand(n_sampling, 3)
+    label_ids = label_ids:expand(n_sampling)
+  end
   local batch = {new=true, x=seed_ids, label=label_ids}
   local pred = helper:predict(batch)
   local output = torch.IntTensor(seed_ids:size(1), max_len)
@@ -77,8 +82,8 @@ local function basic_gen(seed_ids, helper, max_len, label_ids, sampling)
   return output
 end
 
-gen_util.sample = function(seed_ids, helper, max_len, label_ids)
-  return basic_gen(seed_ids, helper, max_len, label_ids, true)
+gen_util.sample = function(seed_ids, helper, max_len, label_ids, n_sampling)
+  return basic_gen(seed_ids, helper, max_len, label_ids, true, n_sampling)
 end
 
 gen_util.greedy = function(seed_ids, helper, max_len, label_ids)
