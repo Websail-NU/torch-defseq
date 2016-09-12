@@ -1,2 +1,5 @@
 *.t7
 data/*/models
+
+.ipynb_checkpoints
+*.ipynb
