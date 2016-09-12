@@ -21,6 +21,7 @@ dictionaries = set()
 def read_definition_file(ifp):
     defs = {}
     for line in ifp:
+        if "<unk>" in line: continue
         parts = line.strip().split('\t')
         word = parts[0]
         dictionary = 'any'
@@ -47,6 +48,8 @@ with open(os.path.join(data_dir, sys_b_file)) as ifp:
 
 okay_ref_words = set()
 okay_ne_words = set()
+okay_a_words = set(a_defs.keys())
+okay_b_words = set(b_defs.keys())
 for word in ref_defs.keys():
     if len(ref_defs[word]) == len(dictionaries):
         okay_ref_words.add(word)
@@ -54,6 +57,7 @@ for word in ne_defs.keys():
     if len(ne_defs[word]) == len(dictionaries):
         okay_ne_words.add(word)
 okay_words = okay_ref_words.intersection(okay_ne_words)
+okay_words = okay_words.intersection(okay_a_words).intersection(okay_b_words)
 okay_words = [x for x in okay_words]
 dictionaries = [x for x in dictionaries]
 used_words = set()
@@ -70,8 +74,8 @@ if target_site == "google_sheet":
             while word in used_words:
                 word = random.choice(okay_words)
             used_words.add(word)
-            # dictionary = random.choice(dictionaries)
-            dictionary = 'wordnet'
+            dictionary = random.choice(dictionaries)
+            # dictionary = 'wordnet'
             ofp.write('MULTIPLE_CHOICE\t' + word + '\t\t\tYES\t')
             ofp.write(ref_defs[word][dictionary][0] + "\t")
             ofp.write(ne_defs[word][dictionary][0] + "\t")

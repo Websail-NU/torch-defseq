@@ -51,6 +51,39 @@ gen_util.seed2tensor = function(seeds, w2i)
   return t_seeds, t_labels
 end
 
+gen_util.entry2tensor = function(words, definitions, w2i)
+  local max_len = 0
+  for i = 1,#definitions do
+    if max_len < #definitions[i] then
+      max_len = #definitions[i]
+    end
+  end
+  local t_sentence = torch.IntTensor(#words, max_len + 4)
+  local t_target = torch.IntTensor(#words, max_len + 4)
+  local t_label = torch.IntTensor(#words)
+  local t_mask = torch.IntTensor(#words, max_len + 4)
+  local sos_id = w2i['<s>']
+  local def_id = w2i['<def>']
+  local eos_id = w2i['</s>']
+  t_sentence:fill(eos_id)
+  t_target:fill(eos_id)
+  t_mask:fill(0)
+  for i = 1, #words do
+    local widx = w2i[words[i]]
+    t_label[i] = widx
+    t_sentence[i][1] = sos_id
+    t_sentence[i][2] = widx
+    t_sentence[i][3] = def_id
+    t_mask[i][3] = 1
+    for j = 1, #definitions[i] do
+      t_sentence[i][j+3] = w2i[definitions[i][j]]
+      t_mask[i][j + 3] = 1
+    end
+  end
+  t_target[{{}, {1, max_len + 3}}]:copy(t_sentence[{{}, {2, max_len + 4}}])
+  return t_sentence, t_target, t_label, t_mask
+end
+
 local function select_word(pred, sampling)
   local words
   if sampling then

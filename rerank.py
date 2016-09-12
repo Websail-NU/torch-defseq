@@ -4,7 +4,9 @@ import kenlm
 from collections import Counter
 from nltk.util import ngrams
 import operator
+import re
 
+pattern = re.compile(r'(?P<words>.+) (or|,|, or|of|and) (?P=words)\b')
 def_file = sys.argv[1]
 lm_file = sys.argv[2]
 function_word_file = sys.argv[3]
@@ -16,7 +18,15 @@ with open(function_word_file) as ifp:
     for line in ifp:
         function_words.add(line.strip())
 
-def clean_repeated(text, max_len=4, min_len=1):
+def clean_repeated(text, max_len=6, min_len=1):
+    global pattern
+    s = pattern.search(text)
+    new_text = text
+    if s is not None:
+        new_text = text[0:s.start()] + s.groups()[0]
+        if s.end() < len(text):
+            new_text = new_text + text[s.end():]
+    text = new_text
     tokens = text.split()
     for n in range(max_len, min_len - 1, -1):
         if n > len(tokens):
@@ -60,7 +70,7 @@ def read_definition_file(ifp):
         prev_def = None
         while prev_def != definition:
             prev_def = definition
-            definition = clean_repeated(definition)
+            definition = clean_repeated(clean_repeated(definition))
         defs[word].append(definition)
         ndefs += 1
     return defs, ndefs

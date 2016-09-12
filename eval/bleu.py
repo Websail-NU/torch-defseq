@@ -6,6 +6,7 @@ import random
 tmp_dir = "/tmp"
 bleu_path = "./sentence-bleu"
 mode = 'average'
+suffix = str(random.random())
 ref_file = sys.argv[1]
 hyp_file = sys.argv[2]
 
@@ -45,7 +46,7 @@ if len(refs) != len(hyps):
     print("Number of words being defined mismatched!")
 words = refs.keys()
 
-hyp_path = os.path.join(tmp_dir, 'hyp')
+hyp_path = os.path.join(tmp_dir, 'hyp' + suffix)
 to_be_deleted = set()
 to_be_deleted.add(hyp_path)
 
@@ -63,7 +64,7 @@ for word in words:
     # write out references
     all_ref_paths = []
     for i, d in enumerate(wrefs):
-        ref_path = os.path.join(tmp_dir, 'ref' + str(i))
+        ref_path = os.path.join(tmp_dir, 'ref' + suffix + str(i))
         with open(ref_path, 'w') as ofp:
             ofp.write(d)
             all_ref_paths.append(ref_path)

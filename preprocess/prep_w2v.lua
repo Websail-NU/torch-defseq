@@ -21,6 +21,7 @@ cmd:option('--w2vUnkSym', 'UNK', 'Unknown symbol')
 cmd:option('--w2vEndSym', '</s>', 'Start sentence symbol')
 cmd:option('--unkUniform', 0.05, 'initialize embeddings that do not exist in word2vec, -1 means UNK embedding')
 
+
 cmd:text()
 opt = cmd:parse(arg or {})
 table.print(opt)

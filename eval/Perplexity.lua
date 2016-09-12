@@ -100,3 +100,33 @@ function Perplexity:_addBatchIdx(predictions, targets, mask, batch_idx)
     end
   end
 end
+
+function Perplexity.sentence_ppl(predictions, targets, mask)
+  -- predictions: table of tensor (batch x vocab) or transpose
+  -- targets: tensor of targets (batch x seq_len)
+  -- mask: optional tensor of mask 1 or 0 (batch x seq_len)
+  local ll = torch.Tensor(mask:size(1)):fill(0)
+  local samples = torch.IntTensor(mask:size(1)):fill(0)
+  for i = 1, #predictions do -- seq
+    local itargets
+    if targets:size(1) == mask:size(1) then
+      itargets = targets[{{},i}]
+    else
+      itargets = targets[{i,{}}]
+    end
+    local ipredictions = predictions[i]
+    for j = 1, itargets:size(1) do -- batch
+      local target_id = itargets[j]
+      local m = mask and mask[{j, i}] or 1
+      if target_id ~= 0 then
+        ll[j] = ll[j] + ipredictions[{j, target_id}] * m
+        samples[j] = samples[j] + 1 * m
+      end
+    end
+  end
+  local sen_ppl = {}
+  for i = 1, ll:size(1) do
+    table.insert(sen_ppl, torch.exp(-ll[i] / samples[i]))
+  end
+  return sen_ppl
+end
