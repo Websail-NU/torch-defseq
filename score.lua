@@ -42,6 +42,7 @@ cmd:option('--cudnnCNN', false, 'use CUDNN CNN implementation')
 -- Reporting --
 cmd:option('--entryFile', '', 'a file containing word<tab>definition per line')
 cmd:option('--outputFile', 'score.txt', 'output file')
+cmd:option('--outputGate', '', 'output for gate values')
 cmd:option('--logFilepath', '', 'Log file path (std by default)')
 
 cmd:text()
@@ -102,7 +103,8 @@ if opt.cuda then
 end
 log.info('Model:\n' .. lm:__tostring__())
 --[[Reset state]]--
-lm:evaluate()
+if opt.outputGate == '' then lm:evaluate()
+else lm:training() end
 lm:forget()
 collectgarbage()
 
@@ -112,7 +114,7 @@ local function compute_score(words, definitions)
   batch.x, batch.y, batch.label, batch.m = gen_util.entry2tensor(words, definitions, w2i)
   local predictions = helper:predict(batch)
   local ppls = Perplexity.sentence_ppl(predictions, batch.y, batch.m)
-  return ppls
+  return ppls, batch
 end
 
 local function write_score(ppls, ofp)
@@ -122,26 +124,59 @@ local function write_score(ppls, ofp)
   end
 end
 
+local function write_gate_values(input, ofp)
+  if not ofp then return end
+  local s = lm.modules[2].modules[1].modules[3]
+  local clones = s.modules[1].sharedClones
+  for i = 1, input:size(1) do
+    for j = 1, input:size(2) do
+      local word = i2w[input[i][j]]
+      local gate_values = clones[j].modules[1].modules[1].output
+      local z = gate_values[1][{{i}, {}}]
+      local r = gate_values[2][{{i}, {}}]
+      ofp:write(word)
+      ofp:write('\n')
+      for k = 1, z:size(2) do
+        ofp:write(z[{1, k}])
+        ofp:write(' ')
+      end
+      ofp:write('\n')
+      for k = 1, r:size(2) do
+        ofp:write(r[{1, k}])
+        ofp:write(' ')
+      end
+      ofp:write('\n')
+      if input[i][j] == opt.eosId then break end
+    end
+  end
+end
+
 if opt.entryFile ~= '' then
   local timer = torch.Timer()
   log.info('Calculating perplexity score for each entry...')
-  ofp = io.open(opt.outputFile, 'w')
+  local ofp = io.open(opt.outputFile, 'w')
+  local ofp2
+  if opt.outputGate ~= '' then ofp2 = io.open(opt.outputGate, 'w') end
   local words, definitions = {}, {}
   for line in io.lines(opt.entryFile) do
     local parts = stringx.split(line, '\t')
     local word = parts[1]
-    local definition = stringx.split(parts[2], ' ')
+    local definition = stringx.split(parts[#parts], ' ')
     -- collect a batch
     table.insert(words, word)
     table.insert(definitions, definition)
     if #words == opt.batchSize then
-      write_score(compute_score(words, definitions), ofp)
+      local pred, batch = compute_score(words, definitions)
+      write_score(pred, ofp)
+      write_gate_values(batch.y, ofp2)
       -- reset batch
       words, definitions = {}, {}
     end
   end
   if #words > 0 then
-    write_score(compute_score(words, definitions), ofp)
+    local pred, batch = compute_score(words, definitions)
+    write_score(pred, ofp)
+    write_gate_values(batch.y, ofp2)
   end
   ofp:close()
   log.info(string.format('- Elapsed time = %ds', timer:time().real))

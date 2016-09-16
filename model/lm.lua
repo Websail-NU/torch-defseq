@@ -366,8 +366,7 @@ local function rfind_modules(model, module_name, modules, marker_name)
         table.insert(modules, model.modules[i])
       end
     end
-  end
-  if match_module(model, module_name, marker_name) then
+  elseif match_module(model, module_name, marker_name) then
     table.insert(modules, model)
   end
 end
