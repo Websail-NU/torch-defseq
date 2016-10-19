@@ -60,3 +60,7 @@ We include our dataset (```data/commondefs```). If you want to use other dataset
 - ```test.lua``` is a script that uses a model to compute perplexity, generate definitions, and rank words (reverse dictionary).
 
 Please see the option within the help message of the scripts.
+
+## To-do
+- Add detail usage and examples to README
+- Refactor ranking scripts
