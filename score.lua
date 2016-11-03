@@ -104,7 +104,13 @@ end
 log.info('Model:\n' .. lm:__tostring__())
 --[[Reset state]]--
 if opt.outputGate == '' then lm:evaluate()
-else lm:training() end
+else
+  lm:training()
+  local dropouts = lm_factory.find_modules(lm, 'nn.Dropout')
+  for i = 1, #dropouts do
+    dropouts[i].p = 0
+  end
+end
 lm:forget()
 collectgarbage()
 
