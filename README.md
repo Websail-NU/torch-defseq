@@ -1,5 +1,5 @@
 # Dictionary Definition Models
-A recurrent neural network that learns to define words from dictionaries.
+A recurrent neural network that learns to define words from dictionaries. This repository is for AAAI2017 paper: "Definition Modeling: Learning to define word embeddings in natural language" along with the [preporcessing scripts](https://github.com/NorThanapon/dict-definition).
 
 ## Dependencies
 - [Torch](https://github.com/torch/torch7)
